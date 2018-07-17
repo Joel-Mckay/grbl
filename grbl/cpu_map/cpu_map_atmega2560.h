@@ -54,18 +54,36 @@
 
 // Define step direction output pins. NOTE: All direction pins must be on the same port.
 //todo: CONVERT YO BUFFER FANOUT
-#define DIRECTION_DDR     DDRB
-#define DIRECTION_PORT    PORTB
-#define DIRECTION_PIN     PINB
+#define DIRECTION_DDRB     DDRB
+#define DIRECTION_PORTB    PORTB
+#define DIRECTION_PINB     PINB
+
+#define DIRECTION_DDRC     DDRC
+#define DIRECTION_PORTC    PORTC
+#define DIRECTION_PINC     PINC
+
+#define DIRECTION_DDRG     DDRG
+#define DIRECTION_PORTG    PORTG
+#define DIRECTION_PING     PING
+
+#define DIRECTION_DDRL     DDRL
+#define DIRECTION_PORTL    PORTL
+#define DIRECTION_PINL     PINL
+
 #define X_DIRECTION_BIT   0 // MEGA2560 Digital Pin PC0
-#define Y_DIRECTION_BIT   1 // MEGA2560 Digital Pin PG2
-#define Z_DIRECTION_BIT   2 // MEGA2560 Digital Pin PG0
-#define A_DIRECTION_BIT   5 // MEGA2560 Digital Pin PB3
-#define B_DIRECTION_BIT   6 // MEGA2560 Digital Pin PB2
-#define C_DIRECTION_BIT   7 // MEGA2560 Digital Pin PB0
+#define Y_DIRECTION_BIT   2 // MEGA2560 Digital Pin PG2
+#define Z_DIRECTION_BIT   0 // MEGA2560 Digital Pin PG0
+#define A_DIRECTION_BIT   3 // MEGA2560 Digital Pin PB3
+#define B_DIRECTION_BIT   2 // MEGA2560 Digital Pin PB2
+#define C_DIRECTION_BIT   0 // MEGA2560 Digital Pin PB0
 #define D_DIRECTION_BIT   4 // MEGA2560 Digital Pin PL4
-#define E_DIRECTION_BIT   3 // MEGA2560 Digital Pin PL6 
-#define DIRECTION_MASK ((1<<X_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)|(1<<A_DIRECTION_BIT)|(1<<B_DIRECTION_BIT)|(1<<C_DIRECTION_BIT)|(1<<D_DIRECTION_BIT)|(1<<E_DIRECTION_BIT)) // All direction bits
+#define E_DIRECTION_BIT   6 // MEGA2560 Digital Pin PL6 
+#define DIRECTION_MASKB ((1<<A_DIRECTION_BIT)|(1<<B_DIRECTION_BIT)|(1<<C_DIRECTION_BIT))
+#define DIRECTION_MASKC (1<<X_DIRECTION_BIT)
+#define DIRECTION_MASKG ((1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT))
+#define DIRECTION_MASKL ((1<<D_DIRECTION_BIT)|(1<<E_DIRECTION_BIT)) // All direction bits
+
+
 
 // Define stepper driver enable/disable output pin.
 #define STEPPERS_DISABLE_DDR   DDRL
@@ -76,41 +94,72 @@
 // Define homing/hard limit switch input pins and limit interrupt vectors.
 // NOTE: All limit bit pins must be on the same port
 //todo: CONVERT TO ISR FANOUT
-#define LIMIT_DDR       DDRL
-#define LIMIT_PORT      PORTL
-#define LIMIT_PIN       PINL
-#define X_LIMIT_BIT     0 // MEGA2560 Digital Pin PL2
+#define LIMIT_DDRL       DDRL
+#define LIMIT_PORTL      PORTL
+#define LIMIT_PINL       PINL
+
+#define LIMIT_DDRG       DDRG
+#define LIMIT_PORTG      PORTG
+#define LIMIT_PING       PING
+
+#define LIMIT_DDRC       DDRC
+#define LIMIT_PORTC      PORTC
+#define LIMIT_PINC       PINC
+
+#define LIMIT_DDRB       DDRB
+#define LIMIT_PORTB      PORTB
+#define LIMIT_PINB       PINB
+
+#define LIMIT_DDRD       DDRD
+#define LIMIT_PORTD      PORTD
+#define LIMIT_PIND       PIND
+
+#define X_LIMIT_BIT     2 // MEGA2560 Digital Pin PL2
 #define Y_LIMIT_BIT     1 // MEGA2560 Digital Pin PG1
-#define Z_LIMIT_BIT     2 // MEGA2560 Digital Pin PC1
-#define A_LIMIT_BIT     3 // MEGA2560 Digital Pin PB1
-#define B_LIMIT_BIT     4 // MEGA2560 Digital Pin PL7
-#define C_LIMIT_BIT     5 // MEGA2560 Digital Pin PD7
-#define D_LIMIT_BIT     6 // MEGA2560 Digital Pin ?
-#define E_LIMIT_BIT     7 // MEGA2560 Digital Pin ?
-#define LIMIT_INT       PCIE0  // Pin change interrupt enable pin
+#define Z_LIMIT_BIT     1 // MEGA2560 Digital Pin PC1
+#define A_LIMIT_BIT     1 // MEGA2560 Digital Pin PB1
+#define B_LIMIT_BIT     7 // MEGA2560 Digital Pin PL7
+#define C_LIMIT_BIT     7 // MEGA2560 Digital Pin PD7
+#define D_LIMIT_BIT     1 // MEGA2560 Digital Pin ?
+#define E_LIMIT_BIT     1 // MEGA2560 Digital Pin ?
+#define LIMIT_MASKL ((1<<X_LIMIT_BIT)|(1<<B_LIMIT_BIT))
+#define LIMIT_MASKG (1<<Y_LIMIT_BIT)
+#define LIMIT_MASKC (1<<Z_LIMIT_BIT)
+#define LIMIT_MASKB (1<<A_LIMIT_BIT)
+#define LIMIT_MASKD (1<<C_LIMIT_BIT)
+
+//Stopped porting firmware here, as the GRBL flow logic will need redone to complete porting to infinity
+#define LIMIT_INT_disabled 1
+#if defined(LIMIT_INT_disabled)
+	#pragma message " atmega2560 only support pin change ISR on port B, C and D. GRBL must be refactored to poll in the step move loop"
+#endif
+#define LIMIT_INT      PCIE0  // Pin change interrupt enable pin
 #define LIMIT_INT_vect  PCINT0_vect
 #define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
-#define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)|(1<<A_LIMIT_BIT)|(1<<B_LIMIT_BIT)|(1<<C_LIMIT_BIT)) // All limit bits
+
+
+
+
 
 // Define spindle enable and spindle direction output pins.
-#define SPINDLE_ENABLE_DDR      DDRC
-#define SPINDLE_ENABLE_PORT     PORTC
-#define SPINDLE_ENABLE_BIT      2 // MEGA2560 Digital Pin PC2
-#define SPINDLE_DIRECTION_DDR   DDRC
-#define SPINDLE_DIRECTION_PORT  PORTC
-#define SPINDLE_DIRECTION_BIT   3 // MEGA2560 Digital Pin PC3
+#define SPINDLE_ENABLE_DDR      DDRE
+#define SPINDLE_ENABLE_PORT     PORTE
+#define SPINDLE_ENABLE_BIT      3 // MEGA2560 Digital Pin PE3
+#define SPINDLE_DIRECTION_DDR   DDRE
+#define SPINDLE_DIRECTION_PORT  PORTE
+#define SPINDLE_DIRECTION_BIT   4 // MEGA2560 Digital Pin PE4
 
 
 // Define flood and mist coolant enable output pins.
 // NOTE: Uno analog pins 4 and 5 are reserved for an i2c interface, and may be installed at
 // a later date if flash and memory space allows.
-#define COOLANT_FLOOD_DDR     DDRC
-#define COOLANT_FLOOD_PORT    PORTC
-#define COOLANT_FLOOD_BIT     4 // MEGA2560 Digital Pin PC4
+#define COOLANT_FLOOD_DDR     DDRH
+#define COOLANT_FLOOD_PORT    PORTH
+#define COOLANT_FLOOD_BIT     3 // MEGA2560 Digital Pin PH3
 #ifdef ENABLE_M7 // Mist coolant disabled by default. See config.h to enable/disable.
-#define COOLANT_MIST_DDR    DDRH
-#define COOLANT_MIST_PORT   PORTH
-#define COOLANT_MIST_BIT    5 // MEGA2560 Digital Pin PC5
+#define COOLANT_MIST_DDR    DDRE
+#define COOLANT_MIST_PORT   PORTE
+#define COOLANT_MIST_BIT    5 // MEGA2560 Digital Pin PE5
 #endif
 
 // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.

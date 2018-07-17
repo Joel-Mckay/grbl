@@ -218,7 +218,7 @@ static st_prep_t prep;
 void st_wake_up()
 {
   // Enable stepper drivers.
-  if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); }
+  if (!bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); }
   else { STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT); }
 
   // Initialize stepper output bits to ensure first ISR call does not step.
@@ -312,10 +312,66 @@ void st_go_idle()
 // with probing and homing cycles that require true real-time positions.
 ISR(TIMER1_COMPA_vect)
 {
+	
+#if defined(LIMIT_INT_disabled)
+	//poll on motion events (note: alert occurs at 2 steps into a home switch)
+    if (sys.state != STATE_ALARM) {
+      if (!(sys_rt_exec_alarm)) {
+          // Check limit pin state.
+          if (limits_get_state()) {
+            mc_reset(); // Initiate system kill.
+            system_set_exec_alarm(EXEC_ALARM_HARD_LIMIT); // Indicate hard limit critical event
+          }     
+      }
+    }
+#endif
+	
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
 
   // Set the direction pins a couple of nanoseconds before we step the steppers
-  DIRECTION_PORT = (DIRECTION_PORT & ~DIRECTION_MASK) | (st.dir_outbits & DIRECTION_MASK);
+  DIRECTION_PORTC = (DIRECTION_PORTC & ~DIRECTION_MASKC);
+  if((st.dir_outbits & 0b00000001 ) != 0x00 )
+  {
+	DIRECTION_PORTC = (DIRECTION_PORTC ) | ((1 << X_DIRECTION_BIT) & DIRECTION_MASKC);
+  }
+  
+  DIRECTION_PORTG = (DIRECTION_PORTG & ~DIRECTION_MASKG);
+  if((st.dir_outbits & 0b00000010 ) != 0x00 )
+  {
+	DIRECTION_PORTG = (DIRECTION_PORTG) | ((1 << Y_DIRECTION_BIT) & DIRECTION_MASKG);
+  }
+
+  if((st.dir_outbits & 0b00000100 ) != 0x00 )
+  {
+	DIRECTION_PORTB = (DIRECTION_PORTG) | ((1 << Z_DIRECTION_BIT) & DIRECTION_MASKG);
+  }
+
+  DIRECTION_PORTB = (DIRECTION_PORTB & ~DIRECTION_MASKB);
+  if((st.dir_outbits & 0b00001000) != 0x00 )
+  {
+	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << A_DIRECTION_BIT) & DIRECTION_MASKB);
+  }
+
+  if((st.dir_outbits & 0b00010000 ) != 0x00 )
+  {
+	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << B_DIRECTION_BIT) & DIRECTION_MASKB);
+  }
+
+  if((st.dir_outbits & 0b00100000 ) != 0x00 )
+  {
+	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << C_DIRECTION_BIT) & DIRECTION_MASKB);
+  }
+
+   DIRECTION_PORTL = (DIRECTION_PORTL & ~DIRECTION_MASKL);
+   if((st.dir_outbits & 0b01000000 ) != 0x00 )
+  {
+	DIRECTION_PORTL = (DIRECTION_PORTL ) | ((1 << D_DIRECTION_BIT) & DIRECTION_MASKL);
+  }
+
+   if((st.dir_outbits & 0b10000000 ) != 0x00 )
+  {
+	DIRECTION_PORTL = (DIRECTION_PORTL) | ((1 << E_DIRECTION_BIT) & DIRECTION_MASKL);
+  }
 
   // Then pulse the stepping pins
   #ifdef STEP_PULSE_DELAY
@@ -564,7 +620,10 @@ void st_reset()
 
   // Initialize step and direction port pins.
   STEP_PORT = (STEP_PORT & ~STEP_MASK) | step_port_invert_mask;
-  DIRECTION_PORT = (DIRECTION_PORT & ~DIRECTION_MASK) | dir_port_invert_mask;
+  DIRECTION_PORTB = (DIRECTION_PORTB & ~DIRECTION_MASKB) | dir_port_invert_mask;
+  DIRECTION_PORTC = (DIRECTION_PORTC & ~DIRECTION_MASKC) | dir_port_invert_mask;
+  DIRECTION_PORTG = (DIRECTION_PORTG & ~DIRECTION_MASKG) | dir_port_invert_mask;
+  DIRECTION_PORTL = (DIRECTION_PORTL & ~DIRECTION_MASKL) | dir_port_invert_mask;
 }
 
 
@@ -574,7 +633,10 @@ void stepper_init()
   // Configure step and direction interface pins
   STEP_DDR |= STEP_MASK;
   STEPPERS_DISABLE_DDR |= 1<<STEPPERS_DISABLE_BIT;
-  DIRECTION_DDR |= DIRECTION_MASK;
+  DIRECTION_DDRB |= DIRECTION_MASKB;
+  DIRECTION_DDRC |= DIRECTION_MASKC;
+  DIRECTION_DDRG |= DIRECTION_MASKG;
+  DIRECTION_DDRL |= DIRECTION_MASKL;
 
   // Configure Timer 1: Stepper Driver Interrupt
   TCCR1B &= ~(1<<WGM13); // waveform generation = 0100 = CTC

@@ -32,20 +32,36 @@
 
 void limits_init()
 {
-  LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
+  LIMIT_DDRB &= ~(LIMIT_MASKB); // Set as input pins
+  LIMIT_DDRC &= ~(LIMIT_MASKC); // Set as input pins
+  LIMIT_DDRD &= ~(LIMIT_MASKD); // Set as input pins
+  LIMIT_DDRG &= ~(LIMIT_MASKG); // Set as input pins
+  LIMIT_DDRL &= ~(LIMIT_MASKL); // Set as input pins
 
   #ifdef DISABLE_LIMIT_PIN_PULL_UP
-    LIMIT_PORT &= ~(LIMIT_MASK); // Normal low operation. Requires external pull-down.
+    LIMIT_PORTB &= ~(LIMIT_MASKB); // Normal low operation. Requires external pull-down.
+    LIMIT_PORTC &= ~(LIMIT_MASKC); // Normal low operation. Requires external pull-down.
+    LIMIT_PORTD &= ~(LIMIT_MASKD); // Normal low operation. Requires external pull-down.
+    LIMIT_PORTG &= ~(LIMIT_MASKG); // Normal low operation. Requires external pull-down.
+    LIMIT_PORTL &= ~(LIMIT_MASKL); // Normal low operation. Requires external pull-down.
   #else
-    LIMIT_PORT |= (LIMIT_MASK);  // Enable internal pull-up resistors. Normal high operation.
+    LIMIT_PORTB |= (LIMIT_MASKB);  // Enable internal pull-up resistors. Normal high operation.
+    LIMIT_PORTC |= (LIMIT_MASKC);  // Enable internal pull-up resistors. Normal high operation.
+    LIMIT_PORTD |= (LIMIT_MASKD);  // Enable internal pull-up resistors. Normal high operation.
+    LIMIT_PORTG |= (LIMIT_MASKG);  // Enable internal pull-up resistors. Normal high operation.
+    LIMIT_PORTL |= (LIMIT_MASKL);  // Enable internal pull-up resistors. Normal high operation.
   #endif
-
+	
+#if defined(LIMIT_INT_disabled)
+	limits_disable();
+#else
   if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
     LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
     PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
   } else {
     limits_disable();
   }
+#endif
 
   #ifdef ENABLE_SOFTWARE_DEBOUNCE
     MCUSR &= ~(1<<WDRF);
@@ -58,7 +74,11 @@ void limits_init()
 // Disables hard limits.
 void limits_disable()
 {
+#if defined(LIMIT_INT_disabled)
+  LIMIT_PCMSK = 0;
+#else
   LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
+#endif
   PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
 }
 
@@ -69,10 +89,44 @@ void limits_disable()
 uint8_t limits_get_state()
 {
   uint8_t limit_state = 0;
-  uint8_t pin = (LIMIT_PIN & LIMIT_MASK);
-  #ifdef INVERT_LIMIT_PIN_MASK
-    pin ^= INVERT_LIMIT_PIN_MASK;
-  #endif
+#if !defined(LIMIT_INT_disabled)
+	uint8_t pin = (LIMIT_PIN & LIMIT_MASK);
+	#ifdef INVERT_LIMIT_PIN_MASK
+	    pin ^= INVERT_LIMIT_PIN_MASK;
+	#endif		
+#endif 
+
+
+#if defined(LIMIT_INT_disabled)	
+	//assume active low 0v input on end switch on
+  if((LIMIT_PINL & (1 << X_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00000001;
+  }
+  
+  if((LIMIT_PING & (1 << Y_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00000010;
+  }
+   if((LIMIT_PINC & (1 << Z_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00000100;
+  }
+   if((LIMIT_PINB & (1 << A_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00001000;
+  }
+   if((LIMIT_PINL & (1 << B_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00010000;
+  }
+  if((LIMIT_PIND & (1 << C_LIMIT_BIT) ) == 0x00 )
+  {
+	limit_state |= 0b00100000;
+  }
+    
+  
+#else
   if (bit_isfalse(settings.flags,BITFLAG_INVERT_LIMIT_PINS)) { pin ^= LIMIT_MASK; }
   if (pin) {
     uint8_t idx;
@@ -80,6 +134,8 @@ uint8_t limits_get_state()
       if (pin & get_limit_pin_mask(idx)) { limit_state |= (1 << idx); }
     }
   }
+#endif 
+  
   return(limit_state);
 }
 
