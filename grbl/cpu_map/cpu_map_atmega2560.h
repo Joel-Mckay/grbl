@@ -70,18 +70,28 @@
 #define DIRECTION_PORTL    PORTL
 #define DIRECTION_PINL     PINL
 
-#define X_DIRECTION_BIT   0 // MEGA2560 Digital Pin PC0
-#define Y_DIRECTION_BIT   2 // MEGA2560 Digital Pin PG2
-#define Z_DIRECTION_BIT   0 // MEGA2560 Digital Pin PG0
-#define A_DIRECTION_BIT   3 // MEGA2560 Digital Pin PB3
-#define B_DIRECTION_BIT   2 // MEGA2560 Digital Pin PB2
-#define C_DIRECTION_BIT   0 // MEGA2560 Digital Pin PB0
-#define D_DIRECTION_BIT   4 // MEGA2560 Digital Pin PL4
-#define E_DIRECTION_BIT   6 // MEGA2560 Digital Pin PL6 
-#define DIRECTION_MASKB ((1<<A_DIRECTION_BIT)|(1<<B_DIRECTION_BIT)|(1<<C_DIRECTION_BIT))
-#define DIRECTION_MASKC (1<<X_DIRECTION_BIT)
-#define DIRECTION_MASKG ((1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT))
-#define DIRECTION_MASKL ((1<<D_DIRECTION_BIT)|(1<<E_DIRECTION_BIT)) // All direction bits
+#define X_DIRECTION_PIN   0 // MEGA2560 Digital Pin PC0
+#define Y_DIRECTION_PIN   2 // MEGA2560 Digital Pin PG2
+#define Z_DIRECTION_PIN   0 // MEGA2560 Digital Pin PG0
+#define A_DIRECTION_PIN   3 // MEGA2560 Digital Pin PB3
+#define B_DIRECTION_PIN   2 // MEGA2560 Digital Pin PB2
+#define C_DIRECTION_PIN   0 // MEGA2560 Digital Pin PB0
+#define D_DIRECTION_PIN   4 // MEGA2560 Digital Pin PL4
+#define E_DIRECTION_PIN  6 // MEGA2560 Digital Pin PL6
+
+#define X_DIRECTION_BIT   0 // GRBL bit mapping
+#define Y_DIRECTION_BIT   1 // GRBL bit mapping
+#define Z_DIRECTION_BIT   2 // GRBL bit mapping
+#define A_DIRECTION_BIT   3 // GRBL bit mapping
+#define B_DIRECTION_BIT   4 // GRBL bit mapping
+#define C_DIRECTION_BIT   5 // GRBL bit mapping
+#define D_DIRECTION_BIT   6 // GRBL bit mapping
+#define E_DIRECTION_BIT   7 // GRBL bit mapping 
+
+#define DIRECTION_MASKB ((1<<A_DIRECTION_PIN)|(1<<B_DIRECTION_PIN)|(1<<C_DIRECTION_PIN))
+#define DIRECTION_MASKC (1<<X_DIRECTION_PIN)
+#define DIRECTION_MASKG ((1<<Y_DIRECTION_PIN)|(1<<Z_DIRECTION_PIN))
+#define DIRECTION_MASKL ((1<<D_DIRECTION_PIN)|(1<<E_DIRECTION_PIN)) // All direction bits
 
 
 
@@ -114,24 +124,34 @@
 #define LIMIT_PORTD      PORTD
 #define LIMIT_PIND       PIND
 
-#define X_LIMIT_BIT     2 // MEGA2560 Digital Pin PL2
-#define Y_LIMIT_BIT     1 // MEGA2560 Digital Pin PG1
-#define Z_LIMIT_BIT     1 // MEGA2560 Digital Pin PC1
-#define A_LIMIT_BIT     1 // MEGA2560 Digital Pin PB1
-#define B_LIMIT_BIT     7 // MEGA2560 Digital Pin PL7
-#define C_LIMIT_BIT     7 // MEGA2560 Digital Pin PD7
-#define D_LIMIT_BIT     1 // MEGA2560 Digital Pin ?
-#define E_LIMIT_BIT     1 // MEGA2560 Digital Pin ?
-#define LIMIT_MASKL ((1<<X_LIMIT_BIT)|(1<<B_LIMIT_BIT))
-#define LIMIT_MASKG (1<<Y_LIMIT_BIT)
-#define LIMIT_MASKC (1<<Z_LIMIT_BIT)
-#define LIMIT_MASKB (1<<A_LIMIT_BIT)
-#define LIMIT_MASKD (1<<C_LIMIT_BIT)
+
+#define X_LIMIT_BIT     0 // GRBL bit mapping
+#define Y_LIMIT_BIT     1 // GRBL bit mapping
+#define Z_LIMIT_BIT     2 // GRBL bit mapping
+#define A_LIMIT_BIT     3 // GRBL bit mapping
+#define B_LIMIT_BIT     4 // GRBL bit mapping
+#define C_LIMIT_BIT     5 // GRBL bit mapping
+#define D_LIMIT_BIT     6 // GRBL bit mapping
+#define E_LIMIT_BIT     7 // GRBL bit mapping
+
+#define X_LIMIT_PIN     2 // MEGA2560 Digital Pin PL2
+#define Y_LIMIT_PIN     1 // MEGA2560 Digital Pin PG1
+#define Z_LIMIT_PIN     1 // MEGA2560 Digital Pin PC1
+#define A_LIMIT_PIN     1 // MEGA2560 Digital Pin PB1
+#define B_LIMIT_PIN     7 // MEGA2560 Digital Pin PL7
+#define C_LIMIT_PIN     7 // MEGA2560 Digital Pin PD7
+#define D_LIMIT_PIN     1 // MEGA2560 Digital Pin ?
+#define E_LIMIT_PIN     1 // MEGA2560 Digital Pin ?
+#define LIMIT_MASKL ((1<<X_LIMIT_PIN)|(1<<B_LIMIT_PIN))
+#define LIMIT_MASKG (1<<Y_LIMIT_PIN)
+#define LIMIT_MASKC (1<<Z_LIMIT_PIN)
+#define LIMIT_MASKB (1<<A_LIMIT_PIN)
+#define LIMIT_MASKD (1<<C_LIMIT_PIN)
 
 //Stopped porting firmware here, as the GRBL flow logic will need redone to complete porting to infinity
 #define LIMIT_INT_disabled 1
 #if defined(LIMIT_INT_disabled)
-	#pragma message " atmega2560 only support pin change ISR on port B, C and D. GRBL must be refactored to poll in the step move loop"
+	#pragma message " atmega2560 only support pin change ISR on port B, C and D. GRBL must poll home switch in the step move loop"
 #endif
 #define LIMIT_INT      PCIE0  // Pin change interrupt enable pin
 #define LIMIT_INT_vect  PCINT0_vect
@@ -139,15 +159,6 @@
 
 
 
-
-
-// Define spindle enable and spindle direction output pins.
-#define SPINDLE_ENABLE_DDR      DDRE
-#define SPINDLE_ENABLE_PORT     PORTE
-#define SPINDLE_ENABLE_BIT      3 // MEGA2560 Digital Pin PE3
-#define SPINDLE_DIRECTION_DDR   DDRE
-#define SPINDLE_DIRECTION_PORT  PORTE
-#define SPINDLE_DIRECTION_BIT   4 // MEGA2560 Digital Pin PE4
 
 
 // Define flood and mist coolant enable output pins.
@@ -192,26 +203,18 @@
 #define PROBE_BIT       1  // MEGA2560 Analog Pin PL1
 #define PROBE_MASK      (1<<PROBE_BIT)
 
+
+// Define spindle enable and spindle direction output pins.
+#define SPINDLE_ENABLE_DDR      DDRE
+#define SPINDLE_ENABLE_PORT     PORTE
+#define SPINDLE_ENABLE_BIT      3 // MEGA2560 Digital Pin PE3
+#define SPINDLE_DIRECTION_DDR   DDRE
+#define SPINDLE_DIRECTION_PORT  PORTE
+#define SPINDLE_DIRECTION_BIT   4 // MEGA2560 Digital Pin PE4
+
 // Start of PWM & Stepper Enabled Spindle
 #ifdef VARIABLE_SPINDLE
-  // Advanced Configuration Below You should not need to touch these variables
-  // Set Timer up to use TIMER4B which is attached to Digital Pin 7
-  #define PWM_MAX_VALUE       255.0
-  #define TCCRA_REGISTER		TCCR4A
-  #define TCCRB_REGISTER		TCCR4B
-  #define OCR_REGISTER		OCR4B
 
-  #define COMB_BIT			COM4B1
-  #define WAVE0_REGISTER		WGM40
-  #define WAVE1_REGISTER		WGM41
-  #define WAVE2_REGISTER		WGM42
-  #define WAVE3_REGISTER		WGM43
-
-  #define SPINDLE_PWM_DDR		DDRG
-  #define SPINDLE_PWM_PORT    PORTG
-  #define SPINDLE_PWM_BIT		0 // MEGA2560 Digital Pin 41
-  
-  //??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     // Variable spindle configuration below. Do not change unless you know what you are doing.
   // NOTE: Only used when variable spindle is enabled.
   #define SPINDLE_PWM_MAX_VALUE     255 // Don't change. 328p fast PWM mode fixes top value as 255.
@@ -220,22 +223,25 @@
   #endif
   #define SPINDLE_PWM_OFF_VALUE     0
   #define SPINDLE_PWM_RANGE         (SPINDLE_PWM_MAX_VALUE-SPINDLE_PWM_MIN_VALUE)
-  #define SPINDLE_TCCRA_REGISTER	  TCCR4A
-  #define SPINDLE_TCCRB_REGISTER	  TCCR4B
-  #define SPINDLE_OCR_REGISTER      OCR4B
-  #define SPINDLE_COMB_BIT	        COM4B1
+  #define SPINDLE_TCCRA_REGISTER	  TCCR3A
+  #define SPINDLE_TCCRB_REGISTER	  TCCR3B
+  #define SPINDLE_OCR_REGISTER      OCR3A
+  #define SPINDLE_COMB_BIT	        COM3A1
 
   // Prescaled, 8-bit Fast PWM mode.
-  #define SPINDLE_TCCRA_INIT_MASK   ((1<<WGM20) | (1<<WGM21))  // Configures fast PWM mode.
-  // #define SPINDLE_TCCRB_INIT_MASK   (1<<CS20)               // Disable prescaler -> 62.5kHz
-  // #define SPINDLE_TCCRB_INIT_MASK   (1<<CS21)               // 1/8 prescaler -> 7.8kHz (Used in v0.9)
-  // #define SPINDLE_TCCRB_INIT_MASK   ((1<<CS21) | (1<<CS20)) // 1/32 prescaler -> 1.96kHz
-  #define SPINDLE_TCCRB_INIT_MASK      (1<<CS22)               // 1/64 prescaler -> 0.98kHz (J-tech laser)
+ // #define SPINDLE_TCCRA_INIT_MASK   ((1<<WGM30) | (1<<WGM31))  // Configures phase locked PWM 10-bit mode.
+  #define SPINDLE_TCCRA_INIT_MASK   ((1<<WGM30))  // Configures phase locked PWM 8-bit mode.
 
+//Note: some opto-isolation chips are slow, so try to keep the PWM under a few kHz 
+  // #define SPINDLE_TCCRB_INIT_MASK   (1<<CS30)               // Disable prescaler -> 62.5kHz
+  // #define SPINDLE_TCCRB_INIT_MASK   (1<<CS31)               // 1/8 prescaler -> 7.8kHz (Used in v0.9)
+  // #define SPINDLE_TCCRB_INIT_MASK   ((1<<CS31) | (1<<CS30)) // 1/32 prescaler -> 1.96kHz
+  #define SPINDLE_TCCRB_INIT_MASK      (1<<CS32)               // 1/64 prescaler -> 0.98kHz (J-tech laser)
+  
   // NOTE: On the 328p, these must be the same as the SPINDLE_ENABLE settings.
-  //#define SPINDLE_PWM_DDR	  DDRB
-  //#define SPINDLE_PWM_PORT  PORTB
-  //#define SPINDLE_PWM_BIT	  3    // Uno Digital Pin 11
+  #define SPINDLE_PWM_DDR	  SPINDLE_ENABLE_DDR
+  #define SPINDLE_PWM_PORT  SPINDLE_ENABLE_PORT
+  #define SPINDLE_PWM_BIT	 SPINDLE_ENABLE_BIT
 
   
   

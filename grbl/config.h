@@ -258,8 +258,8 @@
 // #define RAPID_OVERRIDE_EXTRA_LOW 5 // *NOT SUPPORTED* Percent of rapid (1-99). Usually 5%.
 
 #define DEFAULT_SPINDLE_SPEED_OVERRIDE    100 // 100%. Don't change this value.
-#define MAX_SPINDLE_SPEED_OVERRIDE        200 // Percent of programmed spindle speed (100-255). Usually 200%.
-#define MIN_SPINDLE_SPEED_OVERRIDE         10 // Percent of programmed spindle speed (1-100). Usually 10%.
+#define MAX_SPINDLE_SPEED_OVERRIDE        255 // Percent of programmed spindle speed (100-255). Usually 200%.
+#define MIN_SPINDLE_SPEED_OVERRIDE         1 // Percent of programmed spindle speed (1-100). Usually 10%.
 #define SPINDLE_OVERRIDE_COARSE_INCREMENT  10 // (1-99). Usually 10%.
 #define SPINDLE_OVERRIDE_FINE_INCREMENT     1 // (1-99). Usually 1%.
 
@@ -345,6 +345,7 @@
 // NOTE: IMPORTANT for Arduino Unos! When enabled, the Z-limit pin D11 and spindle enable pin D12 switch!
 // The hardware PWM output on pin D11 is required for variable spindle output voltages.
 #define VARIABLE_SPINDLE // Default enabled. Comment to disable.
+
 
 // Used by variable spindle output only. This forces the PWM output to a minimum duty cycle when enabled.
 // The PWM pin will still read 0V when the spindle is disabled. Most users will not need this option, but
@@ -630,7 +631,7 @@
 
 // Paste CPU_MAP definitions here.
 
-// Paste default settings definitions here.
 
+  
 
 #endif

@@ -99,28 +99,28 @@ uint8_t limits_get_state()
 
 #if defined(LIMIT_INT_disabled)	
 	//assume active low 0v input on end switch on
-  if((LIMIT_PINL & (1 << X_LIMIT_BIT) ) == 0x00 )
+  if((LIMIT_PINL & (1 << X_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00000001;
   }
   
-  if((LIMIT_PING & (1 << Y_LIMIT_BIT) ) == 0x00 )
+  if((LIMIT_PING & (1 << Y_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00000010;
   }
-   if((LIMIT_PINC & (1 << Z_LIMIT_BIT) ) == 0x00 )
+   if((LIMIT_PINC & (1 << Z_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00000100;
   }
-   if((LIMIT_PINB & (1 << A_LIMIT_BIT) ) == 0x00 )
+   if((LIMIT_PINB & (1 << A_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00001000;
   }
-   if((LIMIT_PINL & (1 << B_LIMIT_BIT) ) == 0x00 )
+   if((LIMIT_PINL & (1 << B_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00010000;
   }
-  if((LIMIT_PIND & (1 << C_LIMIT_BIT) ) == 0x00 )
+  if((LIMIT_PIND & (1 << C_LIMIT_PIN) ) == 0x00 )
   {
 	limit_state |= 0b00100000;
   }

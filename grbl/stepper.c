@@ -257,8 +257,12 @@ void st_go_idle()
     pin_state = true; // Override. Disable steppers.
   }
   if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { pin_state = !pin_state; } // Apply pin invert.
+  
+  #if ! defined(LIMIT_INT_disabled)
+  //bug: will unlock position if RST instead of EN pin is held on step drivers pause
   if (pin_state) { STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); }
   else { STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT); }
+  #endif
 }
 
 
@@ -327,50 +331,51 @@ ISR(TIMER1_COMPA_vect)
 #endif
 	
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
-
+  busy = true;
+  
   // Set the direction pins a couple of nanoseconds before we step the steppers
   DIRECTION_PORTC = (DIRECTION_PORTC & ~DIRECTION_MASKC);
   if((st.dir_outbits & 0b00000001 ) != 0x00 )
   {
-	DIRECTION_PORTC = (DIRECTION_PORTC ) | ((1 << X_DIRECTION_BIT) & DIRECTION_MASKC);
+	DIRECTION_PORTC |= (1 << X_DIRECTION_PIN);
   }
   
   DIRECTION_PORTG = (DIRECTION_PORTG & ~DIRECTION_MASKG);
   if((st.dir_outbits & 0b00000010 ) != 0x00 )
   {
-	DIRECTION_PORTG = (DIRECTION_PORTG) | ((1 << Y_DIRECTION_BIT) & DIRECTION_MASKG);
+	DIRECTION_PORTG |= (1 << Y_DIRECTION_PIN);
   }
 
   if((st.dir_outbits & 0b00000100 ) != 0x00 )
   {
-	DIRECTION_PORTB = (DIRECTION_PORTG) | ((1 << Z_DIRECTION_BIT) & DIRECTION_MASKG);
+	DIRECTION_PORTG |= (1 << Z_DIRECTION_PIN);
   }
 
   DIRECTION_PORTB = (DIRECTION_PORTB & ~DIRECTION_MASKB);
   if((st.dir_outbits & 0b00001000) != 0x00 )
   {
-	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << A_DIRECTION_BIT) & DIRECTION_MASKB);
+	DIRECTION_PORTB = (1 << A_DIRECTION_PIN) ;
   }
 
   if((st.dir_outbits & 0b00010000 ) != 0x00 )
   {
-	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << B_DIRECTION_BIT) & DIRECTION_MASKB);
+	DIRECTION_PORTB = (1 << B_DIRECTION_PIN);
   }
 
   if((st.dir_outbits & 0b00100000 ) != 0x00 )
   {
-	DIRECTION_PORTB = (DIRECTION_PORTB) | ((1 << C_DIRECTION_BIT) & DIRECTION_MASKB);
+	DIRECTION_PORTB = (1 << C_DIRECTION_PIN);
   }
 
    DIRECTION_PORTL = (DIRECTION_PORTL & ~DIRECTION_MASKL);
    if((st.dir_outbits & 0b01000000 ) != 0x00 )
   {
-	DIRECTION_PORTL = (DIRECTION_PORTL ) | ((1 << D_DIRECTION_BIT) & DIRECTION_MASKL);
+	DIRECTION_PORTL = (1 << D_DIRECTION_PIN);
   }
 
    if((st.dir_outbits & 0b10000000 ) != 0x00 )
   {
-	DIRECTION_PORTL = (DIRECTION_PORTL) | ((1 << E_DIRECTION_BIT) & DIRECTION_MASKL);
+	DIRECTION_PORTL = (1 << E_DIRECTION_PIN);
   }
 
   // Then pulse the stepping pins
@@ -385,7 +390,6 @@ ISR(TIMER1_COMPA_vect)
   TCNT0 = st.step_pulse_time; // Reload Timer0 counter
   TCCR0B = (1<<CS01); // Begin Timer0. Full speed, 1/8 prescaler
 
-  busy = true;
   sei(); // Re-enable interrupts to allow Stepper Port Reset Interrupt to fire on-time.
          // NOTE: The remaining code in this ISR will finish before returning to main program.
 
